@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brainiac - Interactive Quiz Quest</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="questions.js" defer></script>
+  <script src="sound.js" defer></script>
+  <script src="confetti.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <!-- Victory Canvas for Confetti -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <main class="app-container">
+    <!-- Header with controls shared across screens -->
+    <header class="app-header">
+      <div class="logo-area">
+        <span class="logo-icon">🧠</span>
+        <h1 class="app-title">Brainiac</h1>
+      </div>
+      <div class="header-controls">
+        <button id="toggle-sound-btn" class="control-btn" title="Toggle Sound" aria-label="Toggle Sound">
+          🔊
+        </button>
+        <button id="toggle-theme-btn" class="control-btn" title="Toggle Theme" aria-label="Toggle Theme">
+          🌙
+        </button>
+      </div>
+    </header>
+
+    <!-- SCREEN 1: Welcome / Configuration -->
+    <section id="welcome-screen" class="screen active">
+      <p class="welcome-desc">Test your knowledge across multiple subjects with interactive questions. Choose your category, set your difficulty, and start your journey!</p>
+
+      <div class="form-group">
+        <label for="username-input" class="form-label">Player Name</label>
+        <input type="text" id="username-input" class="input-text" placeholder="Enter your name..." max-length="20" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Select Category</label>
+        <div class="category-grid" id="category-grid">
+          <div class="category-card selected" data-category="all">
+            <span class="category-icon">🌟</span>
+            <span class="category-name">Mixed Trivia</span>
+          </div>
+          <div class="category-card" data-category="webdev">
+            <span class="category-icon">🌐</span>
+            <span class="category-name">Web Dev</span>
+          </div>
+          <div class="category-card" data-category="science">
+            <span class="category-icon">🚀</span>
+            <span class="category-name">Science & Tech</span>
+          </div>
+          <div class="category-card" data-category="culture">
+            <span class="category-icon">🎨</span>
+            <span class="category-name">Pop Culture</span>
+          </div>
+          <div class="category-card" data-category="general">
+            <span class="category-icon">🧠</span>
+            <span class="category-name">General Trivia</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Difficulty Level</label>
+        <div class="difficulty-selector" id="difficulty-selector">
+          <div class="difficulty-option selected" data-value="all">All</div>
+          <div class="difficulty-option" data-value="easy">Easy</div>
+          <div class="difficulty-option" data-value="medium">Medium</div>
+          <div class="difficulty-option" data-value="hard">Hard</div>
+        </div>
+      </div>
+
+      <div class="welcome-footer">
+        <button id="view-leaderboard-home-btn" class="btn-secondary">
+          🏆 Leaderboard
+        </button>
+        <button id="start-quiz-btn" class="btn-primary">
+          Let's Play ➔
+        </button>
+      </div>
+    </section>
+
+    <!-- SCREEN 2: Active Quiz Gameplay -->
+    <section id="quiz-screen" class="screen">
+      <div class="quiz-meta">
+        <div class="meta-left">
+          <span id="question-counter" class="quiz-badge">Question 1 of 10</span>
+          <span id="category-badge" class="quiz-badge">Web Dev</span>
+        </div>
+        <div class="timer-container" id="timer-container">
+          <span class="timer-icon">⏳</span>
+          <span id="timer-seconds" class="timer-seconds">30</span>s
+        </div>
+      </div>
+
+      <!-- Linear progress bar -->
+      <div class="progress-bar-container">
+        <div id="progress-bar-fill" class="progress-bar-fill"></div>
+      </div>
+
+      <!-- Dynamic Question Container -->
+      <div class="question-container">
+        <h2 id="question-text" class="question-text">Loading question...</h2>
+        <div id="options-container" class="options-container">
+          <!-- Injected dynamically based on type -->
+        </div>
+      </div>
+
+      <!-- Immediate correct/incorrect feedback card -->
+      <div id="feedback-card" class="feedback-card">
+        <div class="feedback-header">
+          <span id="feedback-icon"></span>
+          <span id="feedback-title">Correct!</span>
+        </div>
+        <p id="feedback-explanation" class="feedback-explanation">Explanation content goes here.</p>
+      </div>
+
+      <!-- Action Footer -->
+      <div class="quiz-footer">
+        <button id="quit-quiz-btn" class="btn-secondary">Quit</button>
+        <div class="quiz-action-right">
+          <button id="submit-answer-btn" class="btn-primary">Submit Answer</button>
+          <button id="next-question-btn" class="btn-primary" style="display: none;">Next Question ➔</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN 3: Quiz Score Results Summary -->
+    <section id="results-screen" class="screen">
+      <div class="results-summary">
+        <!-- SVG Score Circle Ring Chart -->
+        <div class="score-circle-container">
+          <svg class="score-svg" viewBox="0 0 160 160">
+            <defs>
+              <linearGradient id="score-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="var(--color-primary)" />
+                <stop offset="100%" stop-color="var(--color-secondary)" />
+              </linearGradient>
+            </defs>
+            <circle class="score-circle-bg" cx="80" cy="80" r="70" />
+            <circle id="score-circle-progress" class="score-circle-progress" cx="80" cy="80" r="70" />
+          </svg>
+          <div class="score-text-overlay">
+            <span id="results-score" class="score-big-number">8/10</span>
+            <span class="score-total">Score</span>
+          </div>
+        </div>
+
+        <h2 id="results-headline" class="results-headline">Splendid Job!</h2>
+        <p id="results-message" class="results-message">You have a strong understanding, but there's room to grow!</p>
+      </div>
+
+      <div class="results-stats-row">
+        <div class="stat-card">
+          <div id="stat-accuracy" class="stat-value">80%</div>
+          <div class="stat-label">Accuracy</div>
+        </div>
+        <div class="stat-card">
+          <div id="stat-time" class="stat-value">1m 45s</div>
+          <div class="stat-label">Time Taken</div>
+        </div>
+        <div class="stat-card">
+          <div id="stat-difficulty" class="stat-value">Mixed</div>
+          <div class="stat-label">Difficulty</div>
+        </div>
+      </div>
+
+      <div class="results-actions">
+        <button id="try-again-btn" class="btn-secondary">Play Again</button>
+        <button id="view-leaderboard-results-btn" class="btn-primary">View Leaderboard 🏆</button>
+      </div>
+
+      <!-- Detailed Question-by-Question Review -->
+      <div class="review-section">
+        <h3 class="review-title">Question Breakdown & Explanations</h3>
+        <div id="review-list" class="review-list">
+          <!-- Accordion/list items injected dynamically by app.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN 4: Persistent Score Leaderboard -->
+    <section id="leaderboard-screen" class="screen">
+      <div class="results-summary">
+        <span class="category-icon" style="font-size: 3rem;">🏆</span>
+        <h2 class="results-headline" style="margin-top: 0.5rem; margin-bottom: 1rem;">Leaderboard</h2>
+      </div>
+
+      <div class="leaderboard-table-container">
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Player</th>
+              <th>Category</th>
+              <th>Score</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboard-tbody">
+            <!-- Row scores loaded from localstorage -->
+          </tbody>
+        </table>
+        <div id="no-scores" class="no-scores-msg" style="display: none;">
+          No high scores recorded yet. Be the first to secure a spot!
+        </div>
+      </div>
+
+      <div class="results-actions">
+        <button id="clear-scores-btn" class="btn-secondary">Clear Board</button>
+        <button id="leaderboard-back-btn" class="btn-primary">Back to Home</button>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
